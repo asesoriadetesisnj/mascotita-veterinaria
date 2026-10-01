@@ -12,12 +12,12 @@
 
 // ---- PEGA AQUI TUS CLAVES DE FIREBASE ----
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyBRmSqv38XQg3yVu0tT7CE-7Q7cakueqvU",
+  authDomain: "mascotita-ba796.firebaseapp.com",
+  projectId: "mascotita-ba796",
+  storageBucket: "mascotita-ba796.firebasestorage.app",
+  messagingSenderId: "247981868021",
+  appId: "1:247981868021:web:b05ce095aedf0dd04996bc"
 };
 
 // Dominio interno con el que convertimos "usuario" -> "email" de Firebase Auth.
