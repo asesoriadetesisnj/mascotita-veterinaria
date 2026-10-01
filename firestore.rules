@@ -29,11 +29,17 @@ service cloud.firestore {
 
     // ---- Usuarios: lectura para autenticados, escritura solo ADMIN ----
     match /users/{uid} {
-      allow read: if esUsuarioActivo();
-      // El propio usuario puede actualizar su lastLogin; el resto solo ADMIN.
+      // El usuario puede leer su propio perfil para iniciar/cargar sesion.
+      // Un ADMIN puede leer los perfiles de los demas usuarios.
+      // Esto evita la dependencia circular que existia entre read -> esUsuarioActivo() -> perfil().
+      allow read: if autenticado()
+        && (request.auth.uid == uid || esAdmin());
+
+      // El propio usuario puede actualizar solamente lastLogin; el ADMIN puede modificar cualquier campo.
       allow update: if esAdmin()
         || (request.auth.uid == uid
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin']));
+
       allow create, delete: if esAdmin();
     }
 

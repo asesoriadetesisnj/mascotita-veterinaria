@@ -216,6 +216,14 @@ No requiere WhatsApp Business API. La app usa enlaces `wa.me`:
 
 ---
 
+## 🛠️ Solución al error "Error cargando tu perfil"
+
+Si el usuario puede autenticarse pero el dashboard muestra **"Error cargando tu perfil"**, verifica que el documento `users/{UID}` exista en Firestore y que las reglas publicadas en Firebase correspondan al archivo `firestore.rules`.
+
+La regla de lectura del perfil debe permitir al usuario autenticado leer su propio documento. El archivo `firestore.rules` incluido en este repositorio ya contempla este caso y evita una dependencia circular en la validación del perfil.
+
+Después de modificar `firestore.rules`, hay que **publicar las reglas en Firebase Console → Firestore Database → Reglas**. Cambiar el archivo en GitHub por sí solo no modifica las reglas activas de Firebase.
+
 ## 🧪 Probar en local
 
 Como todo es estatico, basta un servidor estatico simple (la camara y Storage
