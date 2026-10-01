@@ -1,0 +1,25 @@
+# =====================================================================
+# netlify.toml - Configuracion de despliegue en Netlify
+# ---------------------------------------------------------------------
+# El sitio es 100% estatico, no requiere comando de build.
+# publish = "." indica que la raiz del repo es el sitio a publicar.
+# =====================================================================
+
+[build]
+  publish = "."
+  command = ""
+
+# Cabeceras de seguridad recomendadas para la app.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(self)"
+
+# Redireccion: si alguien entra a una ruta inexistente, va al login.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
