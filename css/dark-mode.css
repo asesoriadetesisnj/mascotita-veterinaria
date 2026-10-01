@@ -1,0 +1,33 @@
+/* =====================================================================
+ * dark-mode.css
+ * ---------------------------------------------------------------------
+ * Sobreescribe las variables CSS cuando <html> tiene la clase "dark".
+ * El toggle y la persistencia se manejan en theme.js. Las transiciones
+ * suaves ya estan definidas en styles.css (transition en body).
+ * ===================================================================== */
+
+html.dark {
+  --bg: #121a1f;
+  --bg-card: #1b262c;
+  --texto: #e6edf0;
+  --texto-suave: #9fb0b8;
+  --borde: #2c3a42;
+  --sidebar-bg: #16202640;
+  --sidebar-bg: #152027;
+  --topbar-bg: #152027;
+  --verde: #1fc389;
+  --verde-osc: #16a874;
+  --azul: #4f9be8;
+  --sombra: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+/* Ajustes finos para fondos claros embebidos en modo oscuro. */
+html.dark .login-error { background: #3a1f1a; }
+html.dark .alerta-warn { background: #332616; color: #f4c088; }
+html.dark .alerta-danger { background: #3a1f1a; color: #f0a08c; }
+html.dark .badge-login, html.dark .badge-crear { background: #14352a; color: #5fe0ad; }
+html.dark .badge-logout, html.dark .badge-eliminar { background: #3a1f1a; color: #f0a08c; }
+html.dark .badge-editar { background: #16293f; color: #7fb6f0; }
+html.dark .kpi i { background: rgba(31,195,137,0.15); }
+html.dark .dash-card i { background: rgba(31,195,137,0.15); }
+html.dark .fila-bajo { background: rgba(244,162,89,0.12); }
