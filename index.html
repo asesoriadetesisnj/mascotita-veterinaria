@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mascotita - Ingreso</title>
+  <link rel="icon" href="assets/logo.png">
+  <!-- Iconos Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Estilos propios -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dark-mode.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="assets/logo.png" alt="Mascotita">
+        <h1>Mascotita</h1>
+        <p>Sistema de gestion veterinaria</p>
+      </div>
+      <form id="login-form">
+        <div class="login-error" id="login-error"></div>
+        <div class="form-field">
+          <label>Usuario</label>
+          <input type="text" id="login-user" placeholder="Admin" autocomplete="username">
+        </div>
+        <div class="form-field">
+          <label>Contrasena</label>
+          <div class="input-pass">
+            <input type="password" id="login-pass" placeholder="********" autocomplete="current-password">
+            <button type="button" id="toggle-pass"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="login-btn">
+          <i class="fa-solid fa-right-to-bracket"></i> Ingresar
+        </button>
+      </form>
+      <div class="credenciales-demo">
+        <b>Acceso inicial:</b> usuario <b>Admin</b> / contrasena <b>Mascotita123</b><br>
+        (crealo primero segun el README)
+      </div>
+    </div>
+  </div>
+
+  <!-- SDK de Firebase (version compat por CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <!-- Configuracion y modulos propios -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/auditoria.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Dependencias (no se usan, pero por si acaso)
+node_modules/
+
+# Archivos de entorno y secretos locales
+.env
+.env.local
+*.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Netlify local
+.netlify/
