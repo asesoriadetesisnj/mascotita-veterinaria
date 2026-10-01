@@ -178,9 +178,9 @@ function protegerPagina(opciones) {
       if (!user) { location.href = "index.html"; return; }
       try {
         const snap = await db.collection("users").doc(user.uid).get();
-        if (!snap.exists) { toast("Tu usuario no tiene perfil asignado.", "error"); await auth.signOut(); location.href = "index.html"; return; }
+        if (!snap.exists) { try { sessionStorage.setItem("mascotita-msg", "Tu cuenta no tiene perfil en Firestore (users/<UID>)."); } catch (x) {} await auth.signOut(); location.href = "index.html"; return; }
         const data = snap.data();
-        if (data.active === false) { toast("Usuario desactivado.", "error"); await auth.signOut(); location.href = "index.html"; return; }
+        if (data.active === false) { try { sessionStorage.setItem("mascotita-msg", "Usuario desactivado. Contacta al administrador."); } catch (x) {} await auth.signOut(); location.href = "index.html"; return; }
         window.MASCOTITA.usuario = {
           uid: user.uid, email: user.email,
           nombre: data.nombre || user.email, role: data.role || "user",
