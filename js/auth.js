@@ -14,10 +14,46 @@ function normalizarEmail(entrada) {
   return v.toLowerCase() + "@" + DOMINIO_INTERNO;
 }
 
-/* Si ya hay una sesion activa, saltar directo al panel. */
-auth.onAuthStateChanged(function (user) {
-  if (user && location.pathname.match(/index\.html$|\/$/)) {
-    location.href = "dashboard.html";
+/* Muestra un mensaje de error en la pantalla de login (espera al DOM si hace falta). */
+function mostrarErrorLogin(texto) {
+  function pintar() {
+    const box = document.getElementById("login-error");
+    if (!box) return;
+    box.textContent = texto;
+    box.style.display = "block";
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", pintar);
+  else pintar();
+}
+
+/* Mensaje dejado por otra pagina antes de redirigir al login (p. ej. "sin perfil"). */
+(function () {
+  try {
+    const m = sessionStorage.getItem("mascotita-msg");
+    if (m) { sessionStorage.removeItem("mascotita-msg"); mostrarErrorLogin(m); }
+  } catch (e) { /* ignorar */ }
+})();
+
+/* Evita que este listener compita con el login manual (condicion de carrera). */
+let loginEnCurso = false;
+
+/* Si ya hay una sesion activa, entra al panel SOLO si el perfil existe y esta activo.
+ * Antes redirigia siempre, y el panel te devolvia al login: de ahi el parpadeo. */
+auth.onAuthStateChanged(async function (user) {
+  if (!user || loginEnCurso) return;
+  if (!location.pathname.match(/index\.html$|\/$/)) return;
+  try {
+    const snap = await db.collection("users").doc(user.uid).get();
+    if (snap.exists && snap.data().active !== false) {
+      location.href = "dashboard.html";
+      return;
+    }
+    await auth.signOut();
+    mostrarErrorLogin(mensajeErrorAuth(snap.exists ? "auth/cuenta-inactiva" : "auth/sin-perfil"));
+  } catch (e) {
+    console.error(e);
+    await auth.signOut().catch(function () {});
+    mostrarErrorLogin(mensajeErrorAuth(e && e.code === "permission-denied" ? "auth/permiso" : null));
   }
 });
 
@@ -49,6 +85,7 @@ function initLogin() {
       errBox.style.display = "block"; return;
     }
     btn.disabled = true;
+    loginEnCurso = true;
     btn.innerHTML = '<span class="spinner spinner-sm"></span> Ingresando...';
     try {
       const cred = await auth.signInWithEmailAndPassword(email, pass);
@@ -56,7 +93,7 @@ function initLogin() {
       const snap = await db.collection("users").doc(cred.user.uid).get();
       if (!snap.exists || snap.data().active === false) {
         await auth.signOut();
-        throw { code: "auth/cuenta-inactiva" };
+        throw { code: snap.exists ? "auth/cuenta-inactiva" : "auth/sin-perfil" };
       }
       // Actualizar ultimo acceso + auditoria.
       await db.collection("users").doc(cred.user.uid).update({
@@ -75,6 +112,7 @@ function initLogin() {
       console.error(err);
       errBox.textContent = mensajeErrorAuth(err.code);
       errBox.style.display = "block";
+      loginEnCurso = false;
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Ingresar';
     }
@@ -92,6 +130,10 @@ function mensajeErrorAuth(code) {
       return "Demasiados intentos. Espera unos minutos.";
     case "auth/cuenta-inactiva":
       return "Tu cuenta esta desactivada. Contacta al administrador.";
+    case "auth/sin-perfil":
+      return "Tu cuenta existe pero no tiene perfil en Firestore (coleccion users, ID = tu UID).";
+    case "auth/permiso":
+      return "Sin permiso para leer tu perfil. Revisa que las reglas de Firestore esten publicadas.";
     case "auth/network-request-failed":
       return "Error de red. Revisa tu conexion.";
     default:
