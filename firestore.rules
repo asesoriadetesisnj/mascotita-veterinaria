@@ -1,0 +1,127 @@
+rules_version = '2';
+// =====================================================================
+// Reglas de Seguridad de Firestore para Mascotita
+// ---------------------------------------------------------------------
+// Principios:
+//  - Solo usuarios autenticados pueden leer/escribir.
+//  - ADMIN puede todo.
+//  - USER tiene permisos limitados por coleccion.
+//  - "auditoria" solo permite create (nunca update/delete).
+//  - "config" y "users" solo ADMIN puede modificar.
+// Pega estas reglas en Firebase Console -> Firestore -> Reglas.
+// =====================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- Funciones auxiliares ----
+    function autenticado() {
+      return request.auth != null;
+    }
+    function perfil() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function perfilExiste() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function esAdmin() {
+      return autenticado() && perfilExiste()
+        && perfil().role == 'admin' && perfil().active == true;
+    }
+    function esUsuarioActivo() {
+      return autenticado() && perfilExiste() && perfil().active == true;
+    }
+
+    // ---- Usuarios: lectura para autenticados, escritura solo ADMIN ----
+    match /users/{uid} {
+      // Cada usuario siempre puede leer SU propio perfil (asi la app puede
+      // mostrar "sin perfil"/"desactivado" en vez de un error de permisos).
+      allow read: if autenticado() && (request.auth.uid == uid || esUsuarioActivo());
+      // El propio usuario puede actualizar su lastLogin; el resto solo ADMIN.
+      allow update: if esAdmin()
+        || (request.auth.uid == uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin']));
+      allow create, delete: if esAdmin();
+    }
+
+    // ---- Configuracion: lectura autenticados, escritura solo ADMIN ----
+    match /config/{doc} {
+      allow read: if esUsuarioActivo();
+      allow write: if esAdmin();
+    }
+
+    // ---- Auditoria: cualquier autenticado puede CREAR, nadie edita/borra ----
+    // (Se exige que usuarioUid sea el del que escribe: nadie puede falsear
+    //  el registro a nombre de otro usuario.)
+    match /auditoria/{doc} {
+      allow read: if esAdmin();
+      allow create: if esUsuarioActivo()
+        && request.resource.data.usuarioUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ---- Facturas y ventas: lectura/escritura solo ADMIN ----
+    match /facturas/{doc} {
+      allow read, write: if esAdmin();
+    }
+    match /ventas/{doc} {
+      allow read, write: if esAdmin();
+    }
+
+    // ---- Productos (stock): lectura todos; crear/editar/borrar solo ADMIN ----
+    //  (USER solo puede registrar movimientos, ver mas abajo).
+    match /productos/{doc} {
+      allow read: if esUsuarioActivo();
+      allow create, delete: if esAdmin();
+      // USER puede actualizar unicamente la cantidad (por movimientos);
+      // ADMIN puede actualizar cualquier campo (incluye precios).
+      allow update: if esAdmin()
+        || (esUsuarioActivo()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cantidad']));
+    }
+    match /movimientos_stock/{doc} {
+      allow read: if esUsuarioActivo();
+      allow create: if esUsuarioActivo()
+        && request.resource.data.tipo in ['entrada', 'salida']
+        && request.resource.data.cantidad is number
+        && request.resource.data.cantidad > 0;
+      allow update, delete: if esAdmin();
+    }
+
+    // ---- Modulos operativos: USER activo puede leer, crear y editar ----
+    //  BORRAR registros clinicos queda reservado al ADMIN (evita perdidas
+    //  accidentales o maliciosas de historias clinicas).
+    match /mascotas/{doc} {
+      allow read, create, update: if esUsuarioActivo();
+      allow delete: if esAdmin();
+    }
+    match /propietarios/{doc} {
+      allow read, create, update: if esUsuarioActivo();
+      allow delete: if esAdmin();
+    }
+    match /consultas/{doc} {
+      allow read, create, update: if esUsuarioActivo();
+      allow delete: if esAdmin();
+    }
+    match /vacunas/{doc} {
+      allow read, create, update: if esUsuarioActivo();
+      allow delete: if esAdmin();
+    }
+    match /cirugias/{doc} {
+      allow read, create, update: if esUsuarioActivo();
+      allow delete: if esAdmin();
+    }
+    match /citas/{doc} {
+      allow read, create, update: if esUsuarioActivo();
+      allow delete: if esAdmin();
+    }
+    match /plantillas_whatsapp/{doc} {
+      allow read: if esUsuarioActivo();
+      allow write: if esAdmin();
+    }
+
+    // ---- Por defecto: denegar todo lo no contemplado ----
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
